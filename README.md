@@ -5,7 +5,7 @@ This repository contains the source code for the experiments conducted in our pa
 ### Reference
 If you build upon this work, we'd be happy when you cite our paper:
 
-```
+```bib
 @misc{https://doi.org/10.48550/arxiv.2203.11131,
   doi = {10.48550/ARXIV.2203.11131},
   url = {https://arxiv.org/abs/2203.11131},
@@ -70,7 +70,7 @@ As a difference, the Explainers do not only evaluate the metrics, but also how t
 (or use other functionalities to explain why a metric produced a certain result). Each Explainer class contains a usage example
 in its main block. In general, they can be applied with following utility function:
 
-```
+```python
 import os
 from project_root import ROOT_DIR
 from xai.util.corpus_explainer import explain_corpus
@@ -92,7 +92,7 @@ explain_corpus(E,                                   # The explainer object
 ### Evaluating plausibility with AUC, AP, RtopK to word-level error annotations
 The evaluation with AUC, AP and RtopK is handled and described in `xai/evaluation/`. Extending the previous pseudocode,
 a simple evaluation can be performed by calling:
-```
+```python
 # loads the previous output file that was prepended with its starting and ending row
 evaluate_mlqe_auc([
         os.path.join(ROOT_DIR,'xai/output/explanations/0_99_attribution.json')], 
@@ -110,7 +110,7 @@ Adversarial attacks on metrics can be applied using the `xai/AdversarialAttackEx
 `xai/evaluation/evaluate_attacks.py`. 
 
 Sample usage of Bert-Attack (the parameters are described in the respective file):
-```
+```python
 AE = AdversarialExplainer(binning_mode = 'corpus', bins = 3, attack_types = ['bert-attack'], target = 0,
                               corpus=os.path.join(ROOT_DIR,'metrics/outputs/wmt/wmt20_full_scores_raw_zh_en'))
 explain_corpus(AE,
@@ -136,7 +136,7 @@ Finally, we present a short walkthrough that shows the parts that were teaserd b
 new metric `NewScore`, that grades translations based on the length of the shortest word. I.e. if a translation contains a 
 word with only one letter, it is a good translation:
 
-```
+```python
 from metrics.collection.MetricClass import MetricClass
 
 class NewScore(MetricClass):
@@ -156,7 +156,7 @@ class NewScore(MetricClass):
 ``` 
 
 Let us try out out new metric:
-```
+```python
 n = NewScore()
 print(n(['Any Reference Sentence', 'Any Reference Sentence'], ['A sentence with a short word', 'Long wordy sentence']))
 
@@ -167,7 +167,7 @@ As you can see our metric assigned a higher score to the sentence with the short
 Next, let us assume we have a dataset that contains human annotations on translation quality. Then we could transform this
 dataset into a pandas dataframe as follows:
 
-```
+```python
 import pandas as pd
 
 test_df = pd.DataFrame([['de-en', 'Ein cooler Satz', "A cool sentence", "Even more cool sentences", 'Dummy', 0.9],
@@ -180,7 +180,7 @@ the hypothesis HYP, the System SYSTEM and the human annotations DA. Depending on
 some can be filled with dummies (for our metric SRC and REF could be dummies as well).
 
 If we do not register our metric manually for the evaluation loops in the source code, we can do so during runtime:
-```
+```python
 from metrics.collection.MetricWrapper import MetricWrapper
 
 metric_wrapper = MetricWrapper()
@@ -188,7 +188,7 @@ metric_wrapper.metrics['NEWSCORE'] = NewScore
 ``` 
 
 To evaluate our metric for the pearson correlation with human judgements, we can now use the evaluation loop of the MetricWrapper:
-```
+```python
 from metrics.evaluation.pearson_eval import evaluate_seg
 scores = metric_wrapper.evaluate(test_df, metrics = ['NEWSCORE'])
 
@@ -203,7 +203,7 @@ As you can see, our metric has a rather weak correlation with human judgements ;
 
 Next, assume our dataset additionally contains ground-truth word-level error annotations (in this case non-sensical) that we want to compare our 
 scores with. Therefore, lets reassign the example from before:
-```
+```python
 test_df = pd.DataFrame([['de-en', 'Ein cooler Satz', "A cool sentence", "Even more cool sentences", 'Dummy', 0.9, '[0, 1, 0, 0]'],
                         ['de-en', 'Ein zweiter cooler Satz', "A second cool sentence", "Even more cool sentences two", 'Dummy', 0.3, '[0, 0, 0, 0, 1]'],
                         ['de-en', 'Das ist wirklich der letzte Satz', "This really is the last sentence", "This is not the last sentence", 'Dummy', 0.5, '[0, 1, 0, 0, 0, 0]']],
@@ -212,7 +212,7 @@ test_df = pd.DataFrame([['de-en', 'Ein cooler Satz', "A cool sentence", "Even mo
 
 Then we can evaluate the AUC, AP, RtopK scores as follows:
 
-```
+```python
 from xai.util.corpus_explainer import explain_corpus
 from xai.evaluation.eval4nlp_evaluate import evaluate_mlqe_auc
 # Save our corpus to a file
@@ -235,7 +235,7 @@ evaluate_mlqe_auc(['0_3_NewScore_im.json'], start=0, end=4, invert=True, f=100, 
 
 As a last step lets assume we want to attack our metric on the three presented samples. Therefore
 we can use an attack explainer:
-```
+```python
 from xai.AdversarialAttackExplainer import AdversarialExplainer
 
 AE = AdversarialExplainer(binning_mode = 'loose', bins = 5, loose_span=5, attack_types = ['bert-attack'], target = 0)
